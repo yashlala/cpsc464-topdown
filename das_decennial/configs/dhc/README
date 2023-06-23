@@ -1,0 +1,89 @@
+DHC candidate configs for Demonstration Data Product development (DDP)
+
+These candidate configuration files are generated from the files described in the tables below.
+The files are scrubbed to remove data that is not required, and adjusts any expanded env.
+variables in the given flat files back to env. variables for the CFT to execute against.
+
+
+DDP 1 Candidate 1 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+TODO
+
+
+
+DDP (Deliverable Data Product) 2 Candidate 1 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   12.1 |  PEDESTRIAN_SPECIAL       | US DHCP
+   12.1 |  MYSTIFIED_SENTENCE       | PR DHCP
+   17.1 |  FAST_MOM                 | US DHCH
+   17.1 |  IRON-FISTED_DEVELOPMENT  | PR DHCH
+
+
+
+
+DDP (Deliverable Data Product) 2 Candidate 2 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   18.1 |  SMALL-TIME_RESTAURANT    | US DHCP
+   18.1 |  UNCONVENTIONAL_HABIT     | PR DHCP
+   17.1 |  FAST_MOM                 | US DHCH
+   17.1 |  IRON-FISTED_DEVELOPMENT  | PR DHCH
+
+
+
+PDP (Production Data Product) 1 Experiment 1 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   20.1 |  TENUOUS_FOCUS            | US DHCP
+   20.1 |  RUINOUS_PROCESS          | PR DHCP
+   20.1 |  SEDATE_PRACTICE          | US DHCH
+   20.1 |  BILLABLE_BORDER          | PR DHCH
+
+
+PDP (Production Data Product) 1 Experiment 2 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   21.1 |  STRUCTURAL_BIRTHDAY      | US DHCP
+   21.1 |  OMNIVOROUS_AIRPORT       | PR DHCP
+   20.1 |  SEDATE_PRACTICE          | US DHCH
+   20.1 |  BILLABLE_BORDER          | PR DHCH
+
+
+PDP (Production Data Product) 1 Experiment 3 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   22.1 |  SUFFICIENT_SHAPE          | US DHCP
+   22.1 |  SELF-CENTERED_OFFICER     | PR DHCP
+   22.1 |  INCOMPREHENSIBLE_DATABASE | US DHCH
+   22.1 |  EITHER_DIFFERENCE         | PR DHCH
+
+
+
+
+PDP (Production Data Product) 1 Experiment 4 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   23.1 |  MANAGERIAL_HOUSE          | US DHCP
+   23.1 |  LEGIBLE_REQUEST           | PR DHCP
+   23.1 |  STRUCTURAL_SPEECH         | US DHCH
+   23.1 |  SUCH_BAT                  | PR DHCH
+
+PDP (Production Data Product) 1 Experiment 5 configuration files were derived from these experiment runs:
+
+Exp. #  |   Mission Name            | Notes
+-----------------------------------------------------------------------------------------------
+   23.1 |  MANAGERIAL_HOUSE          | US DHCP
+   23.1 |  LEGIBLE_REQUEST           | PR DHCP
+   23.2 |  SNIDE_KNIFE               | US DHCH
+   23.2 |  FULLY_GROWN_BICYCLE       | PR DHCH
+
+

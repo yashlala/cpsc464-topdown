@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+# -*- mode: python; -*-
+
+
+from subprocess import Popen,PIPE
+import os
+
+C_U_I_CENS = 'C' + 'U' + 'I' + "//CENS"
+C_U_I_TAX  = 'C' + 'U' + 'I' + "//TAX"
+
+def scan(file_name):
+    err = 0
+    for c in ['t13', 'title13', 't26', 'title26']:
+        if c in file_name.lower():
+            print(f'{file_name}: contains {c} in file name')
+            err += 1
+    try:
+        with open(file_name, 'rb') as f:
+            contents = f.read()
+        for c in [C_U_I_CENS.encode('utf-8'), C_U_I_TAX.encode('utf-8')]:
+            if c in contents:
+                print(f'{file_name}: contains {c} in file contents')
+                err += 1
+    except IOError as e:
+        if os.path.isdir(file_name):
+            return 0
+        print(f"Unable to read file {file_name}")
+        err += 1
+    return err
+
+
+if __name__ == "__main__":
+    errors = 0
+    commit_msg = Popen(['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'], stdout=PIPE).communicate()[0].decode('utf-8')
+    # print(f"commit message: {commit_msg}")
+    for line in iter(commit_msg.splitlines()):
+        errors += scan(line)
+    if errors > 0:
+        print(f'Sensitive data was detected in {errors} of the files you have staged for committing (see above).')
+        print('To override this check and commit these files anyway, add --no-verify to your commit command.') 
+
+    exit(errors)

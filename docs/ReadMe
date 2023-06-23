@@ -1,0 +1,4 @@
+To compile a .tex document doc.tex : 
+# from the command line
+
+pdflatex doc.tex

@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+echo Setting up git repository for external collaborators
+#
+# Get directory of the repo
+# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+cd $MYDIR/..
+echo now in `pwd`
+echo Reconfiguring git submodules for external collaborators
+git config submodule.das_framework.url git@github.com:dpcomp-org/das_framework.git
+git submodule init
+git submodule update
+cd das_framework
+git config submodule.ctools.url git@github.com:dpcomp-org/ctools.git
+git config submodule.dfxml.url  git@github.com:dpcomp-org/dfxml
+git submodule init
+git submodule update

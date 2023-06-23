@@ -1,0 +1,302 @@
+;; -*- mode: lisp; -*-
+;; Syntax of this file: http://bach.istc.kobe-u.ac.jp/sugar/current/docs/syntax.html
+
+;; Define variables and their domains
+
+;; (int NAME MIN MAX)      ;; [$PRINT] defines an integer variable; 
+;; $PRINT means print it when we list all possible solutions
+
+;; Provide the order we wish the solutions sorted and printed:
+;; $SORT-ORDER: NO_SPOUSE_OR_PARTNER,NOT_ALONE,COHABITING_SAME_SEX,COHABITING_OPPOSITE_SEX,MARRIED_SAME_SEX,MARRIED_OPPOSITE_SEX,NO_RELATIVES,WITH_RELATIVES,NO_OWN_CHILD_UNDER_18,OWN_CHILD_UNDER_18,OWN_CHILD_IN_BOTH_RANGES,OWN_CHILD_BETWEEN_6_AND_17,OWN_CHILD_UNDER_6_ONLY,NO_CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER,CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER,CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER,CHILD_BETWEEN_6_AND_17_EXCLUDING_HOUSEHOLDER_PARTNER,CHILD_UNDER_6_ONLY_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER,CHILD_UNDER_18,MULTIG,SIZE
+
+
+;; Households can have size 1, 2, 3, 4, 5, 6, 7 plus
+;; This is equivalent to HHSIZE from the MDF spec
+(int SIZE 1 7)                    ;; $PRINT
+
+;; All other variables will be binary. 0=No, 1=yes. 
+;; Note the binary variables are defined as integers, not as booleans, so 1 + 1 = 2. With booleans 1 + 1 = 0.
+
+;; Notes for comparison to MDF (using v6 spec for reference):
+;; The goal is to automatically generate a set of feasible combinations that roughly correspond to all feasible combinations 
+;; of the following variables from the MDF Unit table:
+;; HHSIZE, HHT, HHT2, CPLT, UPART, MULTG, PAOC, P18, PAC
+
+;; The end result is one variable, we call HHTYPE, that has a bunch of values. HHTYPE is then crossed with the other variables from the MDF such as HHSEX and HHAGE.
+
+;; The histogram is restricted to the household/occupied housing units universe. It does not include vacant units or GQs so we do not use NIU (Not In Universe) whenever possible. 
+;; e.g., SIZE above starts with size 1 not size 0.
+
+;; Relationship are with respect to the householder so parent means parent of the householder, grandchild means grandchild of the householder, etc.
+;; The one exception is that child (without the own qualifier) may refer to the householder.  
+
+;; The correspondence between several of our variables with the MDF is straightforward
+
+;; Child variables
+
+;; This is P18.
+(int CHILD_UNDER_18             0 1) ;; $PRINT Yes, if at least one person in the household is under 18 including the householder, spouse, unmarried partner
+
+;; Similar to PAOC. Basically, one binary variable for each possible value.
+;; The NIU value is not needed.  
+(int OWN_CHILD_UNDER_18         0 1) ;; $PRINT Yes, if at least one biological, adopted or step child under 18
+(int OWN_CHILD_UNDER_6_ONLY     0 1) ;; $PRINT Yes, if there is at least one own child under 6 and no own children between 6 and 17.
+(int OWN_CHILD_BETWEEN_6_AND_17 0 1) ;; $PRINT Yes, if there is at least one own child between 6 and 17 and no own children under 6.
+(int OWN_CHILD_IN_BOTH_RANGES   0 1) ;; $PRINT Yes, if there is at least one own child under 6 and at least one own child between 6 and 17.
+
+;; Similar to PAC. Basically, one binary variable for each possible value.
+;; The NIU value is not needed.
+;; CXHHSUP stands for: Child eXcluding HouseHolder, Spouse, Unmarried Partner.
+(int CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER           0 1) ;; $PRINT Yes, if at least one child under 18 excluding householder, spouse, unmarried partner
+(int CHILD_UNDER_6_ONLY_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER       0 1) ;; $PRINT Yes, if at least one CXHHSUP under 6 but no CXHHSUP between 6 and 17.
+(int CHILD_BETWEEN_6_AND_17_EXCLUDING_HOUSEHOLDER_PARTNER   0 1) ;; $PRINT Yes, if at least one CXHHSUP between 6 and 17 but no CXHHSUP under 6.
+(int CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER     0 1) ;; $PRINT Yes, if at least one CXHHSUP under 6 and at least one CXHHSUP between 6 and 17.
+  
+
+
+;; Similar to MULTG.
+;; We use a binary No, Yes distinction. So a size 1 household is Not Multigenerational instead of being NIU. We recode Size=1 and MULTIG=0 to the MDF Unit MULTG = 0 (NIU) at the end of the DAS.
+;; The NIU value is not needed.
+(int MULTIG 0 1)                 ;; $PRINT Yes, if there is at least one own child and at least one of either parent or parent-in-law or grandchild.
+
+
+;; Similar to CLPT but with some extra variables for convience later on.
+;; Spouse or partner variables
+;; Note a size 1 household will be recoded to NIU at the end of the DAS. And NO_SPOUSE_OR_PARTER = 1 and SIZE > 1 will become CLPT = 5 (all other households).
+;; NIU is not needed.
+(int MARRIED                 0 1) ;; $PRINT Yes, if married (RELSHIP = 21 or 23 for exactly one person in the household).             
+(int MARRIED_SAME_SEX        0 1) ;; $PRINT Yes, if married with RELSHIP = 23 for exactly one person in the household. 
+(int MARRIED_OPPOSITE_SEX    0 1) ;; $PRINT Yes, if married with RELSHIP = 21 for exactly one person in the household.
+(int COHABITING              0 1) ;; $PRINT Yes, if cohabiting (RELSHIP = 22 or 24 for exactly one person in the household).
+(int COHABITING_SAME_SEX     0 1) ;; $PRINT Yes, if cohabiting with RELSHIP = 24 for exactly one person in the household.
+(int COHABITING_OPPOSITE_SEX 0 1) ;; $PRINT Yes, if married with RELSHIP = 22 for exactly one person in the household.
+(int NO_SPOUSE_OR_PARTNER    0 1) ;; $PRINT Yes, if no spouse or partner present. i.e., RELSHIP does not equal 21,22,23,24 for any person in the household.
+
+
+;; HHT, HHT2, and UPART are less straightforward.
+
+;; We cover UPART first.
+
+;; Recall we cross the outcome of this process with HHSEX.
+;; Hence, we know a household with a Male householder and COHABITING_SAME_SEX = 1 has UPART = 1.
+;; We know a household with a Female householder and COHABITING_OPPOSITE_SEX = 1 has UPART = 4.
+;; Similar for UPART = 2 and 3.
+;; Size 1 households will have NO_SPOUSE_OR_PARTNER = 1 and get recoded to UPART = NIU at the end of the DAS.
+;; NO_SPOUSE_OR_PARTNER = 1 or MARRIED = 1 and size >= 2 have UPART = 5.
+;; In short, we do not need any additional variables to handle UPART.
+
+;; For HHT and HHT2 we only need to introduce one more variable   
+ 
+;; Relatives
+(int WITH_RELATIVES 0 1)              ;; $PRINT Yes, if at least one person in the household has RELSHIP = 21, 23, 25-33.
+
+;; Bascially, a combination of SIZE, spouse or partner variables, OWN_CHILD variables, and WITH_RELATIVES crossed with HHSEX gives you everything you need to determine HHT and HHT2.
+;; A few examples (not an exhaustive list):
+;; SIZE = 1, NO_SPOUSE_OR_PARTNER = 1, OWN_CHILD_UNDER_18 = 0, WITH_RELATIVES = 0, and HHSEX = Female (Male). Then HHT = 6 (4) and HHT2 = 05 (09).
+;; SIZE >= 2, NO_SPOUSE_OR_PARTNER = 1, OWN_CHILD_UNDER_18 = 0, WITH_RELATIVES = 0,
+;; SIZE >= 2, NO_SPOUSE_OR_PARTNER = 1, OWN_CHILD_UNDER_18 = 0, WITH_RELATIVES = 1, and HHSEX = Female (Male). Then HHT = 3 (2) and HHT2 = 07 (11)
+;; SIZE >=2, NO_SPOUSE_OR_PARTNER = 1, OWN_CHILD_UNDER_18 =1, WITH_RELATIVES = 1, and HHSEX = Female (Male). Then HHT = 3 (2) and HHT2 = 06 (10) 
+;; SIZE >= 2, MARRIED =1, OWN_CHILD_UNDER_18 = 0, WITH_RELATIVES = 0 or 1, HHSEX = Female or Male. Then HHT = 1 and HHT2 = 02.
+;; SIZE >= 3, MARRIED = 1, OWN_CHILD_UNDER_18 = 1, WITH_RELATIVES = 1, and HHSEX = Female or Male, Then HHT = 1 and HHT2 = 01.
+;; SIZE >= 3, COHABITING_SAME_SEX = 1, OWN_CHILD_UNDER_18 = 0, WITH_RELATIVES = 1, and HHSEX = Male, Then HHT = 2 and HHT2 = 04.
+;; SIZE = 4, NO_SPOUSE_OR_PARTER = 1, OWN_CHILD_UNDER_18 = 0, WITH_RELATIVES = 1, and HHSEX = Female. Then HHT = 3 and HHT2 = 07.  
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Rules
+;; We build rules (or constraints) to define interactions between our variables.
+;; At this point, the computer has no idea that you cannot have NO_SPOUSE_OR_PARTER = 1 and MARRIED = 1
+;; or that SIZE = 1 must mean that OWN_CHILD_UNDER_18 = 0.
+
+
+;; "(=" introduces a constraint.  The syntax is:
+;; (= a b)  means that a must equal b
+
+;; In general, (math operation a b) means a operation b. e.g., (+ a b) means a + b
+;; Expressions can be nested. e.g., (= a (+ b c)) means a = b + c
+
+;; Marriage Rules
+;; Married equals the sum of married same sex and married opposite sex. 
+;; The only way for married to equal 0 is if both of married same sex and married opposite sex are 0. 
+;; If married is 1, exactly one of married same sex or married opposite sex are 1.
+;; In other words, if you are married then you are either a same sex couple or an opposite sex couple but not both.
+;; And if you are not married you are neither a married same sex couple nor a married opposite sex couple.
+(= MARRIED    (+ MARRIED_SAME_SEX MARRIED_OPPOSITE_SEX))             ;; MARRIED = MARRIED_SAME_SEX + MARRIED_OPPOSITE_SEX
+
+;; Same but for cohabiting
+(= COHABITING (+ COHABITING_SAME_SEX COHABITING_OPPOSITE_SEX))       ;; COHABITING = COHABITING_SAME_SEX + COHABITING_OPPOSITE_SEX
+
+;; Some math operations support more than two arguments. e.g., (+ a b c) means a + b + c
+;; The household must be exactly one of married, cohabiting, or no spouse or partner
+(= 1 (+ MARRIED COHABITING NO_SPOUSE_OR_PARTNER))                    ;; 1 = MARRIED + COHABITING + NO_SPOUSE_OR_PARTNER
+
+;; Rules interact with eachother so the previous three rules take together mean that
+;; exactly one of MARRIED_SAME_SEX, MARRIED_OPPOSITE_SEX, COHABITING_SAME_SEX, COHABITING_OPPOSITE_SEX, NO_SPOUSE_OR_PARTNER will be 1 for a household. 
+
+;; "(imp" means implies. (imp a b) means that if a is true, then b must be true
+;; A householder living alone cannot have a spouse or partner.
+(imp (= SIZE 1) (= NO_SPOUSE_OR_PARTNER 1))                          ;; If SIZE = 1, then NO_SPOUSE_OR_PARTER = 1
+
+
+;; MULTIG RULES 
+;; multi-generational households must have at a minimum 3 people (the householder, an own child, a parent or parent-in-law or grandchild)
+(imp (= MULTIG 1) (>= SIZE 3))                    ;; If MULTIG = 1, then SIZE >= 3
+
+;; if a household is married or cohabiting and multi-generational, there must be 4 or more (householder, a spouse or partner, an own child, a parent or parent-in-law or grandchild)
+(imp (and 
+      (= (+ MARRIED COHABITING) 1)
+      (= MULTIG 1)) 
+     (>= SIZE 4))                                 ;; If MARRIED + COHABITING = 1 and MUTLIG = 1, then SIZE >= 4
+
+;; if household is multi-generational and size=3, then there is no spouse or partner
+(imp (and 
+      (= SIZE 3)
+      (= MULTIG 1))
+     (= NO_SPOUSE_OR_PARTNER 1))                  ;; If SIZE = 3 and MULTIG = 1, then NO_SPOUSE_OR_PARTNER = 1
+
+
+;; Own Child rules
+
+;; if there are own children under 18, one of the three mutually exclusive categories must be true. If not, all are 0.
+(= OWN_CHILD_UNDER_18 (+ OWN_CHILD_UNDER_6_ONLY OWN_CHILD_BETWEEN_6_AND_17 OWN_CHILD_IN_BOTH_RANGES))
+
+;; WNS: I believe these next two are not needed. The equivalent cxhhsup rules are more general. It does not hurt to include redundant rules but I will remove them after testing.
+;; TODO: Test it is ok to remove.
+
+;; If there is at least one own child under 18, then the household has at least two people
+;;(imp (= OWN_CHILD_UNDER_18 1) (>= SIZE 2))
+
+;; If there is at least one own child for both age ranges, then the household has at least three people
+;;(imp (= OWN_CHILD_IN_BOTH_RANGES 1) (>= SIZE 3))
+
+
+;; CXHHSUP rules
+
+;; if there are cxhhsup under 18, one of the three mutually exclusive categories must be true. If not, all are 0.
+(= CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER (+ CHILD_UNDER_6_ONLY_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER CHILD_BETWEEN_6_AND_17_EXCLUDING_HOUSEHOLDER_PARTNER CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER))
+
+;; If there is at least one CXHHSUP under 18, then the household has at least two people
+(imp (= CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER 1) (>= SIZE 2))
+
+;; If there is at least one CXHHSUP for both age ranges, then the household has at least three people
+(imp (= CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER 1) (>= SIZE 3))
+
+;; Other interactions.
+
+;; OWN_CHILD implies CXHHSUP but not vice-versa
+;; an own child is a child (excluding householder, spouse, unmarried partner).
+(imp (= OWN_CHILD_UNDER_18 1)
+     (= CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER 1))
+
+;; an own child under 6 is a cxhhsup under 6 so the mutually exclusive category for child_between_6_and_17_excluding_householder_spouse_partner is not possible.
+(imp (= OWN_CHILD_UNDER_6_ONLY 1)
+     (= (+ CHILD_UNDER_6_ONLY_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER) 1))
+
+;; similar
+(imp (= OWN_CHILD_BETWEEN_6_AND_17 1)
+     (= (+ CHILD_BETWEEN_6_AND_17_EXCLUDING_HOUSEHOLDER_PARTNER CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER) 1))
+
+;; similar
+(imp (= OWN_CHILD_IN_BOTH_RANGES 1)
+     (= CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER 1))
+
+;; a child (excluding householder, spouse, unmarried partner) is a child (including householder, spouse, unmarried partner)
+(imp (= CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER 1)
+     (= CHILD_UNDER_18 1))
+
+;; a spouse is a relative
+(imp (= MARRIED 1) (= WITH_RELATIVES 1))
+
+;; an own child is a relative
+(imp (= OWN_CHILD_UNDER_18 1) (= WITH_RELATIVES 1))
+
+;; a multig household must have a relative
+(imp (= MULTIG 1) (= WITH_RELATIVES 1))
+
+;; household includes a spouse or partner and at least one child (who is not the householder/spouse/partner), so at least 3 people
+(imp (and
+      (= (+ MARRIED COHABITING) 1)
+      (= CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER 1))
+     (>= SIZE 3))
+
+;; household includes a spouse or partner and at least two children (who are not the householder/spouse/partner), so at least 4 people
+(imp (and
+      (= (+ MARRIED COHABITING) 1)
+      (= CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER 1))
+     (>= SIZE 4))
+
+;; household includes: householder, spouse or partner , at least 2 for cxhhsup. No own children under 18 but household is multig so needs at least one own child over 18. Hence, at least 5 people.
+(imp (and
+      (= (+ MARRIED COHABITING) 1)
+      (= CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER 1)
+      (= OWN_CHILD_UNDER_18 0)
+      (= MULTIG 1))
+     (>= SIZE 5))
+
+;; household includes: householder, spouse or partner, at least 2 own children. But household is multig so also needs a parent or parent-in-law or grandchild. Hence, at least 5 people.
+(imp (and
+      (= (+ MARRIED COHABITING) 1)
+      (= OWN_CHILD_IN_BOTH_RANGES 1)
+      (= MULTIG 1))
+     (>= SIZE 5))
+
+;; household includes no children under 18 (excluding householder, spouse, partner) but has a child under 18. Since the householder has no spouse or partner, the child under 18 must be the householder. Multig requires an own child but it is impossible for a householder under 18 to have an own child over 18.
+(imp (and
+      (= NO_SPOUSE_OR_PARTNER 1)
+      (= CHILD_UNDER_18 1)
+      (= CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER 0))
+     (= MULTIG 0))
+
+;; household has an unmarried partner. Partners are not relatives so size is at least 3.
+(imp (and
+      (= COHABITING 1)
+      (= WITH_RELATIVES 1))
+     (>= SIZE 3))
+
+;; household has householder and at least 2 own children. For multig, also need a parent or parent-in-law or grandchild so that is at least 4
+(imp (and
+      (= NO_SPOUSE_OR_PARTNER 1)
+      (= OWN_CHILD_IN_BOTH_RANGES 1)
+      (= MULTIG 1))
+     (>= SIZE 4))
+
+;; household has householder and at least 2 cxhhsup but no own child under 18. To have multig = 1, there must be an own child over 18 so that is at least 4. One of the cxhhsup could be a grandchild.
+(imp (and
+      (= NO_SPOUSE_OR_PARTNER 1)
+      (= OWN_CHILD_UNDER_18 0)
+      (= CHILD_IN_BOTH_RANGES_EXCLUDING_HOUSEHOLDER_PARTNER 1)
+      (= MULTIG 1))
+     (>= SIZE 4))
+
+;; a householder living alone has no relatives present.
+(imp (= SIZE 1) (= WITH_RELATIVES 0))
+
+
+
+;; These variables are included for sorting purposes. They do not add additional combinations given their rules. They are used to control the order in which solutions get printed.
+
+
+;; not alone
+(int NOT_ALONE 0 1)                                    ;; $PRINT Yes, if the householder is not alone.
+
+(imp (>= SIZE 2) (= NOT_ALONE 1))
+(imp (= SIZE 1) (= NOT_ALONE 0))
+
+;; reverse of OWN_CHILD_UNDER_18
+(int NO_OWN_CHILD_UNDER_18 0 1)                        ;; $PRINT Yes, if the household has no own children under 18
+
+(= 1 (+ NO_OWN_CHILD_UNDER_18 OWN_CHILD_UNDER_18)) 
+
+;; reverse of CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER
+(int NO_CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER 0 1)                          ;; $PRINT Yes, if the household has no CXHHSUP under 18
+
+(= 1 (+ NO_CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER CHILD_UNDER_18_EXCLUDING_HOUSEHOLDER_SPOUSE_PARTNER))
+
+;; reverse of WITH_RELATIVES
+(int NO_RELATIVES 0 1)                                 ;; $PRINT Yes, if the household has no relatives
+
+(= 1 (+ WITH_RELATIVES NO_RELATIVES))
+
+

@@ -1,0 +1,5 @@
+idle=`uptime | sed 's/.*average: //' | awk '{print $3;}'`
+users=`users`
+echo idle=$idle users=$users
+
+

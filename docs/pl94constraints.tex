@@ -1,0 +1,222 @@
+
+\documentclass[12pt]{amsart}
+
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+
+\newcommand{\noi}{\noindent}
+
+\usepackage{fullpage}
+
+\begin{document}
+
+\section{Motivating Example}
+
+\noindent \underline{Block-Level Invariants} \\
+$\text{P}_b$ : Total persons in block $b$ \\
+$\text{VA}_b$ : Voting age persons in block $b$\\
+$\text{GQ}_b$ : GQs in block $b$\\
+$\text{HH}_b$ : Households/Householders in block $b$ \\
+
+
+\noindent \underline{Additional Notation}:\\
+$\text{NVA}_b$ : Non-Voting age persons in block $b$  \\
+$\text{PGQ}_b$ : Persons in GQs in block $b$ \\
+$\text{PHH}_b$ : Persons in Households in block $b$  \\
+$\text{VAGQ}_b$ : Voting-age persons in GQs in block $b$  \\
+$\text{NVAGQ}_b$ : Non voting-age persons in GQs in block $b$  \\
+$\text{VAHH}_b$ : Voting-age in households in block $b$  \\
+$\text{NVAHH}_b$ : Non voting-age persons in households in block $b$\\
+
+\noindent \underline{Block-Level Implied Constraints}\\
+The following constraints are implied from the block-level invariants. It is useful to calculate them becuase they have implications for higher-level implied geography constraints that must be put into place.
+\begin{itemize}
+\item All variables are nonnegative
+
+\item NonVotingAge = People - VotingAge
+
+
+\noindent $\text{NVA}_b = \text{P}_b - \text{VA}_b$ 
+
+\item There is at least one gq or household in a block
+
+\noindent $HH_b + GQ_b \geq 1$
+
+
+\item People in GQ $\geq$ number of GQ facilities (if there are households) or $\geq$ people (if there are no households); People in GQ $\leq$ Number of people minus number of households; $\leq$ 0 if no GQ. (these conditions subsume the condition that people in GQ is equal to people if there are no households).
+
+\begin{flalign*}
+\text{PGQ}_b & \ge  I[\text{HH}_b >0] \text{GQ}_b + I[\text{HH}_b =0] \text{P}_b & \\
+& \le I[\text{GQ}_b >0]( \text{P}_b - \text{HH}_b )
+\end{flalign*}
+
+\item People in HH $\geq$ number of households (if there are gq) or $\geq$ people (if no gq); People in HH $\leq$ number of people minus number of GQ. People in HH $\leq 0$ if no HH.
+
+\begin{flalign*}
+\text{PHH}_b & \ge I[\text{GQ}_b >0] \text{HH}_b + I[\text{GQ}_b = 0] \text{P}_b &\\
+& \le I[\text{HH}_b >0]( \text{P}_b - \text{GQ}_b)
+\end{flalign*}
+
+\item Voters in GQ is $\geq$ voters (if no households) and is $\geq$ number of GQ - nonvoters (if households); voters in GQ is $\leq$ 0 if no gq, if there are gq then voters in gq $\leq$ voters minus $\max(0, \text{households minus nonvoters})$ 
+
+\begin{flalign*}
+\text{VAGQ}_b 
+%& \ge I[\text{GQ}_b > 0] \left( I[\text{HH}_b =0]  \text{VA}_b + I[\text{VA}_b = \text{P}_b] I[\text{HH}_b >0] \text{GQ}_b    \right)  &\\
+& \ge \max\left(0,\quad I[\text{HH}_b == 0] \text{VA}_b\right), \quad I[\text{HH}_b>0] (GQ_b-NVA_b)) &\\
+& \le I[\text{GQ}_b >0] \left( \text{VA}_b -  I[\text{HH}_b > \text{NVA}_b] (\text{HH}_b -\text{NVA}_b ) \right) 
+\end{flalign*}
+
+\item Nonvoters in GQ  $\geq$ nonvoters (if no households) and is $\geq$ number of GQ - voters (if households); nonvoters in GQ is $\leq$ 0 if no gq, if there are gq then nonvoters in gq $\leq$ nonvoters minus $\max(0, \text{households minus voters})$
+
+\begin{flalign*}
+\text{NVAGQ}_b 
+%& \ge I[\text{GQ}_b > 0] \left( I[\text{HH}_b =0]  \text{NVA}_b + I[\text{NVA}_b = \text{P}_b] I[\text{HH}_b >0] \text{GQ}_b    \right)  &\\
+& \ge \max\left(0,\quad I[\text{HH}_b == 0] \text{NVA}_b\right), \quad I[\text{HH}_b>0] (GQ_b-VA_b)) &\\
+& \le I[\text{GQ}_b >0] \left( \text{NVA}_b -  I[\text{HH}_b > \text{VA}_b]( \text{HH}_b - \text{VA}_b ) \right) 
+\end{flalign*}
+
+\item Voters in HH is $\geq$ voters (if no gq) and is $\geq$ number of HH - nonvoters (if gq); voters in HH is $\leq$ 0 if no hh, if there are hh then voters in hh $\leq$ voters minus $\max(0, \text{gq minus nonvoters})$ 
+
+\begin{flalign*}
+\text{VAHH}_b 
+%& \ge I[\text{HH}_b > 0] \left( I[\text{GQ}_b =0]  \text{VA}_b + I[\text{VA}_b = \text{P}_b] I[\text{GQ}_b >0] \text{HH}_b    \right)  &\\
+& \ge \max\left(0,\quad I[\text{GQ}_b == 0] \text{VA}_b\right), \quad I[\text{GQ}_b>0] (HH_b-NVA_b)) &\\
+& \le  I[\text{HH}_b >0] \left( \text{VA}_b -  I[\text{GQ}_b > \text{NVA}_b] ( \text{GQ}_b - \text{NVA}_b) \right) 
+\end{flalign*}
+
+\item NonVoters in HH is $\geq$ nonvoters (if no gq) and is $\geq$ number of HH - voters (if gq); nonvoters in HH is $\leq$ 0 if no hh, if there are hh then nonvoters in hh $\leq$ nonvoters minus $\max(0, \text{gq minus voters})$ 
+
+
+\begin{flalign*}
+\text{NVAHH}_b 
+%& \ge I[\text{HH}_b > 0] \left( I[\text{GQ}_b =0]  \text{NVA}_b + I[\text{NVA}_b = \text{P}_b] I[\text{GQ}_b >0] \text{HH}_b    \right)  &\\
+& \ge \max\left(0,\quad I[\text{GQ}_b == 0] \text{NVA}_b\right), \quad I[\text{GQ}_b>0] (HH_b-VA_b)) &\\
+& \le I[\text{HH}_b >0] \left( \text{NVA}_b -  I[\text{GQ}_b > \text{VA}_b ] (\text{GQ}_b - \text{VA}_b ) \right) 
+\end{flalign*}
+\end{itemize}
+\noindent \underline{Implied Constraints at higher geography levels}\\
+
+Let us use the addional notation $\text{ub}$ and $\text{lb}$ to denote the upper bound and lower bound as calculated in the above section. Then, the implied constraints at higher levels of geography are simply the sum of the constraints for the blocks that reside in that geogrphy.
+
+For example for geography $g$. 
+\begin{flalign*}
+\text{PGQ}_g & \ge \sum_{b \in g} \text{PGQlb}_b    &\\
+& \le \sum_{b \in g} \text{PGQub}_b .
+\end{flalign*}
+This same relationship holds for all of the other constarints mentioned above. 
+
+\section{Formal Problem Statement}
+
+Let $T$ be a table that is part of some larger database $D$ (for example, $T$ is PL94 and $D$ is CEF). A constraint can involve variables in $T$ as well as variables in $D$. Let $C$ be the total set of constraints.
+
+The first step is to remove irrelevant constraints. We use the following definition.
+\begin{definition}[Compatible constraints]
+Let $S$ and $T$ be table schemas and let $f$ be a linear function that converts instances of $S$ to instances of $T$. That is, $f(s)$ has the schema of $T$ for every instance $s$ of $S$. Let $P$ be a set of constraints on instances of $S$. A set $Q$ of constraints on instances of $T$ is \underline{$f$-compatible with $P$} if 
+\begin{itemize}
+\item if an instance $s$ of $S$ satisfies $P$ then $f(s)$ satisfies $Q$. (consistency)
+\item If an instance $t$ of $T$ satisfies $Q$ there always exists an instance $s$ of $S$ such that $f(s)=t$. (extendability)
+\end{itemize}
+\end{definition}
+
+For example, suppose $T$ tabulates the number of people who are (voting age/non-voting age) x (in household/in gq) x (race) x block. Let $C$ consist of the constraints:
+\begin{enumerate}
+\item Every person either lives in a household or a group quarters.
+\item Number of voting age people per block is fixed
+\item Number of people per block is fixed
+\item Number of households per block is fixed
+\item Number of group quarters facilities of each group quarter type is fixed
+\item Group quarter type 101 cannot have anyone less than 20 years old
+\item Group quarter type 102 cannot have anyone less than 7 years old
+\end{enumerate} 
+if $C_b$ consists of the first 6 constraints and $C_a$ consists of the last constraint, $C_a$ is irrelevant for $T$ because every non-voting age person assigned to 102 can have their age assigned to be 8.
+
+On the other hand, if $C_b$ consists of the first 5 constraints and $C_a$ consists of the last two, then $C_a$ is not irrelevant because if $T$ has non-voting age people in a block that has no households and only has GQ 101, then those voting-age people have to be assigned to that GQ and violate its constraint.
+
+We then need the concept of implied constraint.
+
+%The constraints can be SQL count queries $Q_1,\dots, Q_m$ involving one table or multiple tables (using joins with equality on join attributes). The WHERE condition is a conjunction of conditions of the form $A_{i,j}=A_{i^\prime, j^\prime)$ and $A_{i,j} \in S$
+
+
+\section{Matrix Notation and Implied constraints}
+
+\noi I've been trying to generalize this problem including matrix notation. Define the following:\\
+
+\noi $P$ is a vector of lenth $n$ representing the flattened parent array\\
+$C$ is a vector of length $n \times b$, where $b$ is the number of blocks that belong to the parent. The cells of the individual blocks are essentially stacked on one another.
+
+Assume that we can specify the constraint matrix $A (m, n$) and bounds vectors $U (m \times b)$ and $L (m \times b)$ such that 
+\begin{equation}
+(A  \otimes I_b) C \le U ; \;
+ (A  \otimes I_b) C \ge L, \label{block_cons}
+\end{equation}
+
+\noi where $\otimes$ is the Kronecker product and $I_b$ is an identity matrix of size $b$. These define our constraints at the block level (explicit and implied). Then, we are adding in the additional constraint that $C$ adds up to a given vector $P$
+\begin{equation} \label{sum_cons}
+ [I_n, \cdots, I_n]_b \, C = P 
+\end{equation}
+\noi $[I_n, \cdots, I_n]_b$ represents a matrix formed by right-stacking $b$ identity matrices of size $n$.\\  
+
+\noi Lastly, we have the assumption that the parent values meet the sum of the constraints at the block level: 
+\begin{equation}
+A\, P \le [I_m, \cdots, I_m]_b \, U ; \;  A\, P \ge [I_m, \cdots, I_m]_b \, L
+\end{equation}
+\\
+\noi We know that the constraints (\ref{block_cons}) yield a feasible solution set, but the question is can  we show that when we add the constraints (\ref{sum_cons}) do we maintain feasibility.\\
+
+\noi Can we use the special structure of the problem to prove feasibility?
+
+\subsection{Constraint Construction}
+
+Consider constraints in matrix notation and represented as having both upper and lower bounds
+$$ A x \le U ; \; Ax \ge L $$
+\noi where the rows of $A$ represent the cells of $x$ corresponding to a constraint, where each cell is a 1 or a 0.\\
+
+\noi Proposed Properties:
+\begin{enumerate}
+\item If a row of $A$ is a linear combination of other rows of $A$ and the resulting linear combination of the RHS is equal to the given value, then the row is redundant.
+	\begin{itemize}
+	\item Example: Non-Voting Age exact total is redundant with Voting-Age exact total and persons exact total
+	\end{itemize} 
+\item Intersections of two (or more) constraints can be specified as cell-wise products of row vector.  The intersection is empty if the resulting vector is the zero vector. Note that the RHS of intersection constraint is NOT the product of the individual RHS cells.
+\item The RHS for intersection constraints can be calculated as follows:
+Assume we have two sets $A$ and $B$ where $a$ and $b$ are their respective set size.  Also assume $0 \le l_a \le a \le u_a$ and $0 \le l_b \le b \le u_b$, and $a + a' =t$ (the total), where $a'$ is the size of the set not $A$.  Then the intersection size of the intersection of $(A,B)$, call it $|(A,B)|$ is bounded by:
+	\begin{itemize}
+	\item $|(A,B)| \le  min(u_a, u_b)  = u_{ab} $
+	\item $|(A,B)| \ge  max (0, (l_a + l_b) - t  ) = l_{ab} $
+	\end{itemize} 
+ 
+\end{enumerate}
+
+
+% A intersection B >= max(0, (A_lb + B_lb) - T )
+% A intersection B <= min(A_ub, B_ub)
+
+
+\section{Technical Material}
+\subsection{Fourier Motzkin Elimination}
+\subsection{Fourier Motzkin Elimination with Integer feasibility}
+\subsection{TUM}
+\subsection{Gassuain Elimination with Integer Feasibility}
+\section{Example}
+Suppose at the block $b$ level we have a histogram on attributes V (0 = not voting age, 1 = voting age) and unit id ($0,\dots H_b-1$ belong to households and $H_b\dots H_b+G_b-1$ are gq). This gives us a table $2x(H_b+G_b)$ table $S_b$ with constraints $S_b[0, :].sum()=NVA_b$, $S_b[1, :].sum()=VA_b$ and  $\forall i, S_b[:, i]\geq 1$. This takes care of total pop constraints, voting/non-voting age totals, number of households, number of gq, and minimum occupancy of HH and GQ.
+
+We want a table $2x2$ table $T_b$ where $T_b[i, 0]=S_b[i, 0:H_b].sum()$ and $T_b[i,1]=S_b[i, H_b:H_b+G_b].sum()$. What constraints should $T_b$ satisfy?
+
+\subsection{Step 1}
+Write down the constraints involving $T_b$ and $S_b$, then use GE and FME to eliminate variables from $S_b$.
+
+\begin{align*}
+\sum_i S_b[0, i] &= NVA_b\\
+\sum_i S_b[1, i] &= VA_b\\
+\forall i, S_b[0,i] + S_b[1,i]&\geq 1\\
+T_b[0,0] & = \sum_{i=0}^{H_b-1} S_b[0,i]\\
+T_b[1,0] & = \sum_{i=0}^{H_b-1} S_b[1,i]\\
+T_b[0,0] & = \sum_{i=H_b}^{H_b+H_g-1} S_b[0,i]\\
+T_b[1,0] & = \sum_{i=H_b}^{H_b+H_g-1} S_b[1,i]\\
+\forall i, j, S_b[i,j]&\geq 0
+\end{align*}
+ 
+
+\end{document}
+
+ 

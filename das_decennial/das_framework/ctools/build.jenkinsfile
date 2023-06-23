@@ -1,0 +1,78 @@
+// This job logs the Jenkins svc account in to the server where the jenkins_pipeline.py is deployed
+// and runs the pipeline directly.
+// This job is activated for all pushes to branches and pull requests for ctools.
+// It performs the following checks:
+// - Syntax Checks
+// - Merge Conflicts
+// - Unit Tests
+
+def environments = [
+    "Ite" : [account_number: {ACCOUNT_NUMBER}]
+]
+
+pipeline {
+    agent { label('agent1') }
+
+    environment{
+        DAS_EMR_SSH_CREDS_ITE = credentials({JENKINS_CREDENTIAL_ID})
+        //DAS_EMR_SSH_CREDS_STG= credentials({JENKINS_CREDENTIAL_ID})
+        //DAS_EMR_SSH_CREDS_PROD= credentials({JENKINS_CREDENTIAL_ID})
+        JENKINS_SA_GITHUB = credentials({JENKINS_CREDENTIAL_ID})
+    }
+
+    stages {
+        stage('Cleanup') {
+            steps {
+                step([$class: 'WsCleanup'])
+                checkout scm
+            }
+        }
+        stage('Init Vars') {
+            steps {
+                script {
+                    PIP_FILE = "${env.WORKSPACE}/pip_config"
+                    AWS_CONFIG_FILE = "${env.WORKSPACE}/aws_config"
+                }
+            }
+        }
+        stage('Get IPADDR') {
+            steps {
+                configFileProvider([configFile(fileId: '396fc950-3750-4206-a31f-93b0ad853f6f', variable: 'config_file', targetLocation: 'EMR_Cluster_Config.json')]) {
+                    // Do Nothing here
+                }
+                sh """
+                JENKINS_IP = cat ${env.WORKSPACE}/EMR_Cluster_Config.json | jq -r .ITE.JENKINS_IPADDR
+                """
+            }
+        }
+        stage('SSH Test') {
+            steps {
+                script {
+                    if(!env.GIT_PREVIOUS_COMMIT){
+                        env.GIT_PREVIOUS_COMMIT = env.GIT_COMMIT
+                    }
+                }
+                sh '''
+                    echo "Seeing what environment variables are present: "
+                    echo "GIT_COMMIT: $GIT_COMMIT"
+                    sshpass -p $DAS_EMR_SSH_CREDS_ITE_PSW ssh -o StrictHostKeyChecking=no $DAS_EMR_SSH_CREDS_ITE_USR@\$(cat $WORKSPACE/EMR_Cluster_Config.json | jq -r .ITE.JENKINS_IPADDR) \
+                        HADOOP_USER_NAME=hadoop PYSPARK_PYTHON=/usr/bin/python3 \
+                        PYSPARK_DRIVER_PYTHON=/usr/bin/python3 \
+                        DAS_S3ROOT=s3://v-s3-das-ite-tda-devtest \
+                        JBID=jenkins \
+                        /usr/bin/python3 /mnt/gits/das-jenkins/jenkins_pipeline.py \
+                          --repository_name ctools \
+                          --commit_sha $GIT_COMMIT \
+                          --previous_commit_sha $GIT_PREVIOUS_COMMIT \
+                          --deploy_path /mnt/gits/jenkins/runs/ \
+                          --syntax_checks \
+                          --merge_conflicts \
+                          --pylint_check \
+                          --unit_tests \
+                          --check_behind_master \
+                          --timeout 9000 \
+                '''
+            }
+        }
+    }
+}
