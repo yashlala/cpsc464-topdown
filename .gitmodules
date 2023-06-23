@@ -1,3 +1,3 @@
 [submodule "wiki"]
 	path = wiki
-	url = git@{GIT_HOST_NAME}:DAS/das_decennial_dhc_publication.wiki.git
+	url = ../das_decennial_dhc_publication.wiki.git
