@@ -14,9 +14,9 @@ cd ~
 mkdir das_files
 mkdir das_files/output
 
-wget http://mirrors.ibiblio.org/apache/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz || exit 1
+wget https://mirrors.huaweicloud.com/apache/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz || exit 1
 tar xzf spark-2.4.0-bin-hadoop2.7.tgz || exit 1
-wget http://ftp.wayne.edu/apache/hadoop/common/hadoop-3.1.2/hadoop-3.1.2.tar.gz || exit 1
+wget 'https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename=hadoop/common/hadoop-3.1.2/hadoop-3.1.2.tar.gz' || exit 1
 tar xzf hadoop-3.1.2.tar.gz || exit 1
 
 # Add to ~/.bashrc:
